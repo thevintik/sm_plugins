@@ -10,7 +10,8 @@
 #define L4D_TEAM_SPECTATE	1
 #define MATCHMODES_PATH		"configs/matchmodes.txt"
 
-new Handle:g_hVote = INVALID_HANDLE;
+new Handle:g_hMatchVote = INVALID_HANDLE;
+new Handle:g_hResetMatchVote = INVALID_HANDLE;
 new Handle:g_hModesKV = INVALID_HANDLE;
 new Handle:g_hCvarPlayerLimit = INVALID_HANDLE;
 new String:g_sCfg[32];
@@ -21,8 +22,8 @@ public Plugin:myinfo =
 	name = "Match Vote",
 	author = "vintik",
 	description = "!match !rmatch",
-	version = "1.1",
-	url = "https://bitbucket.org/vintik/various-plugins"
+	version = "1.2",
+	url = "https://github.com/thevintik/sm_plugins"
 }
 
 public OnPluginStart()
@@ -58,6 +59,7 @@ public OnLibraryAdded(const String:name[])
 
 public Action:MatchRequest(client, args)
 {
+	PrintToChatAll("%d", g_bIsLgofnocAvailable);
 	if ((!client) || (!g_bIsLgofnocAvailable)) return Plugin_Handled;
 	if (args > 0)
 	{
@@ -204,12 +206,12 @@ bool:StartMatchVote(client, const String:cfgname[])
 			return false;
 		}
 		new String:sBuffer[64];
-		g_hVote = CreateBuiltinVote(VoteActionHandler, BuiltinVoteType_Custom_YesNo, BuiltinVoteAction_Cancel | BuiltinVoteAction_VoteEnd | BuiltinVoteAction_End);
+		g_hMatchVote = CreateBuiltinVote(VoteActionHandler, BuiltinVoteType_Custom_YesNo, BuiltinVoteAction_Cancel | BuiltinVoteAction_VoteEnd | BuiltinVoteAction_End);
 		Format(sBuffer, sizeof(sBuffer), "Load confogl '%s' config?", cfgname);
-		SetBuiltinVoteArgument(g_hVote, sBuffer);
-		SetBuiltinVoteInitiator(g_hVote, client);
-		SetBuiltinVoteResultCallback(g_hVote, MatchVoteResultHandler);
-		DisplayBuiltinVote(g_hVote, iPlayers, iNumPlayers, 20);
+		SetBuiltinVoteArgument(g_hMatchVote, sBuffer);
+		SetBuiltinVoteInitiator(g_hMatchVote, client);
+		SetBuiltinVoteResultCallback(g_hMatchVote, VoteResultHandler);
+		DisplayBuiltinVote(g_hMatchVote, iPlayers, iNumPlayers, 20);
 		return true;
 	}
 	PrintToChat(client, "Match vote cannot be started now.");
@@ -222,7 +224,8 @@ public VoteActionHandler(Handle:vote, BuiltinVoteAction:action, param1, param2)
 	{
 		case BuiltinVoteAction_End:
 		{
-			g_hVote = INVALID_HANDLE;
+			g_hMatchVote = INVALID_HANDLE;
+			g_hResetMatchVote = INVALID_HANDLE;
 			CloseHandle(vote);
 		}
 		case BuiltinVoteAction_Cancel:
@@ -232,7 +235,7 @@ public VoteActionHandler(Handle:vote, BuiltinVoteAction:action, param1, param2)
 	}
 }
 
-public MatchVoteResultHandler(Handle:vote, num_votes, num_clients, const client_info[][2], num_items, const item_info[][2])
+public VoteResultHandler(Handle:vote, num_votes, num_clients, const client_info[][2], num_items, const item_info[][2])
 {
 	for (new i=0; i<num_items; i++)
 	{
@@ -240,9 +243,18 @@ public MatchVoteResultHandler(Handle:vote, num_votes, num_clients, const client_
 		{
 			if (item_info[i][BUILTINVOTEINFO_ITEM_VOTES] > (num_clients / 2))
 			{
-				DisplayBuiltinVotePass(vote, "Confogl is loading...");
-				ServerCommand("sm_forcematch %s", g_sCfg);
-				return;
+				if (vote == g_hMatchVote)
+				{
+					DisplayBuiltinVotePass(vote, "Confogl is loading...");
+					ServerCommand("sm_forcematch %s", g_sCfg);
+					return;
+				}
+				else if (vote == g_hResetMatchVote)
+				{
+					DisplayBuiltinVotePass(vote, "Confogl is unloading...");
+					ServerCommand("sm_resetmatch");
+					return;
+				}
 			}
 		}
 	}
@@ -286,30 +298,13 @@ StartResetMatchVote(client)
 			PrintToChat(client, "Resetmatch vote cannot be started. Not enough players.");
 			return;
 		}
-		g_hVote = CreateBuiltinVote(VoteActionHandler, BuiltinVoteType_Custom_YesNo, BuiltinVoteAction_Cancel | BuiltinVoteAction_VoteEnd | BuiltinVoteAction_End);
-		SetBuiltinVoteArgument(g_hVote, "Turn off confogl?");
-		SetBuiltinVoteInitiator(g_hVote, client);
-		SetBuiltinVoteResultCallback(g_hVote, ResetMatchVoteResultHandler);
-		DisplayBuiltinVote(g_hVote, iPlayers, iNumPlayers, 20);
+		g_hResetMatchVote = CreateBuiltinVote(VoteActionHandler, BuiltinVoteType_Custom_YesNo, BuiltinVoteAction_Cancel | BuiltinVoteAction_VoteEnd | BuiltinVoteAction_End);
+		SetBuiltinVoteArgument(g_hResetMatchVote, "Turn off confogl?");
+		SetBuiltinVoteInitiator(g_hResetMatchVote, client);
+		SetBuiltinVoteResultCallback(g_hResetMatchVote, VoteResultHandler);
+		DisplayBuiltinVote(g_hResetMatchVote, iPlayers, iNumPlayers, 20);
 		FakeClientCommand(client, "Vote Yes");
 		return;
 	}
 	PrintToChat(client, "Resetmatch vote cannot be started now.");
-}
-
-public ResetMatchVoteResultHandler(Handle:vote, num_votes, num_clients, const client_info[][2], num_items, const item_info[][2])
-{
-	for (new i=0; i<num_items; i++)
-	{
-		if (item_info[i][BUILTINVOTEINFO_ITEM_INDEX] == BUILTINVOTES_VOTE_YES)
-		{
-			if (item_info[i][BUILTINVOTEINFO_ITEM_VOTES] > (num_clients / 2))
-			{
-				DisplayBuiltinVotePass(vote, "Confogl is unloading...");
-				ServerCommand("sm_resetmatch");
-				return;
-			}
-		}
-	}
-	DisplayBuiltinVoteFail(vote, BuiltinVoteFail_Loses);
 }
