@@ -1,0 +1,128 @@
+"MatchModes"
+{
+
+// You can delete any section. Or add your own, for example:
+//
+//	"Scavenge"
+//	{
+//		"scavogl"				//config's directory
+//		{
+//			"name" "Scavogl"	//that appears in the menu
+//		}
+//		//.... (list of other configs)
+//	}
+
+	"4v4"
+	{
+		"eq"
+		{
+			"name" "Equilibrium"
+		}
+		"promod"
+		{
+			"name" "ProMod"
+		}
+		"fresh"
+		{
+			"name" "Fresh"
+		}
+		"retro"
+		{
+			"name" "L4D1-style"
+		}
+		"hunters"
+		{
+			"name" "Hunters"
+		}
+		"metafogl"
+		{
+			"name" "Metafogl"
+		}
+		"jockeys"
+		{
+			"name" "Jockeys"
+		}
+		"promodhr"
+		{
+			"name" "ProMod HR"
+		}
+		"metalight"
+		{
+			"name" "Metafogl Light"
+		}
+		"esl"
+		{
+			"name" "Confogl ESL"
+		}
+		"eqbeta"
+		{
+			"name" "Equilibrium beta"
+		}
+	}
+	"3v3"
+	{
+		"hunters3v3"
+		{
+			"name" "3v3 Hunters"
+		}
+		"pm3v3"
+		{
+			"name" "3v3 ProMod"
+		}
+		"meta3v3"
+		{
+			"name" "3v3 Metafogl"
+		}
+		"fresh3v3"
+		{
+			"name" "3v3 Fresh"
+		}
+	}
+	"2v2"
+	{
+		"pm2v2"
+		{
+			"name" "2v2 ProMod"
+		}
+		"meta2v2"
+		{
+			"name" "2v2 Metafogl"
+		}
+		"hunters2v2"
+		{
+			"name" "2v2 Hunters"
+		}
+		"fresh2v2"
+		{
+			"name" "2v2 Fresh"
+		}
+		"2v2"
+		{
+			"name" "2v2 Confogl 2.2.2"
+		}
+	}
+	"1v1"
+	{
+		"deadman"
+		{
+			"name" "DeadMan"
+		}
+		"pm1v1"
+		{
+			"name" "1v1 ProMod"
+		}
+		"fresh1v1"
+		{
+			"name" "1v1 Fresh"
+		}
+		"meta1v1"
+		{
+			"name" "1v1 Metafogl "
+		}
+		"1v1"
+		{
+			"name" "1v1 Confogl 2.2.2"
+		}
+	}
+
+}
