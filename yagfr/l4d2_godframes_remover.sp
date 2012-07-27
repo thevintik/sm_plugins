@@ -83,8 +83,9 @@ public Action:OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damage
 	if (victim <= 0 || victim > MaxClients || !IsClientInGame(victim)) return Plugin_Continue;
 	if (GetClientTeam(victim) != L4D_TEAM_SURVIVORS) return Plugin_Continue;
 	
+	new CountdownTimer:timer = L4D2Direct_GetInvulnerabilityTimer(victim);
 	//remove engine-based godframes
-	CTimer_Invalidate(L4D2Direct_GetInvulnerabilityTimer(victim));
+	if (timer!=CTimer_Null) CTimer_Invalidate(timer);
 	
 	if (attacker > 0 && attacker <= MaxClients && IsClientInGame(attacker)
 		&& GetClientTeam(attacker) == L4D_TEAM_INFECTED

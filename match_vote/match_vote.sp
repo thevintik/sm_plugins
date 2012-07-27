@@ -2,10 +2,7 @@
 #include <sourcemod>
 #include <builtinvotes>
 //get here: https://forums.alliedmods.net/showthread.php?t=162164
-
-#undef REQUIRE_PLUGIN
 #include <lgofnoc>
-#define REQUIRE_PLUGIN
 
 #define L4D_TEAM_SPECTATE	1
 #define MATCHMODES_PATH		"configs/matchmodes.txt"
@@ -15,7 +12,6 @@ new Handle:g_hResetMatchVote = INVALID_HANDLE;
 new Handle:g_hModesKV = INVALID_HANDLE;
 new Handle:g_hCvarPlayerLimit = INVALID_HANDLE;
 new String:g_sCfg[32];
-new bool:g_bIsLgofnocAvailable;
 
 public Plugin:myinfo = 
 {
@@ -44,23 +40,11 @@ public OnPluginStart()
 	RegConsoleCmd("sm_match", MatchRequest);
 	RegConsoleCmd("sm_rmatch", MatchReset);
 	g_hCvarPlayerLimit = CreateConVar("sm_match_player_limit", "2", "Minimum # of players in game to start the vote", FCVAR_PLUGIN);
-	g_bIsLgofnocAvailable = LibraryExists("lgofnoc");
-}
-
-public OnLibraryRemoved(const String:name[])
-{
-	if (StrEqual(name, "lgofnoc")) g_bIsLgofnocAvailable = false;
-}
- 
-public OnLibraryAdded(const String:name[])
-{
-	if (StrEqual(name, "lgofnoc")) g_bIsLgofnocAvailable = true;
 }
 
 public Action:MatchRequest(client, args)
 {
-	PrintToChatAll("%d", g_bIsLgofnocAvailable);
-	if ((!client) || (!g_bIsLgofnocAvailable)) return Plugin_Handled;
+	if (!client) return Plugin_Handled;
 	if (args > 0)
 	{
 		//config specified
@@ -263,7 +247,7 @@ public VoteResultHandler(Handle:vote, num_votes, num_clients, const client_info[
 
 public Action:MatchReset(client, args)
 {
-	if ((!client) || (!g_bIsLgofnocAvailable)) return Plugin_Handled;
+	if (!client) return Plugin_Handled;
 	//voting for resetmatch
 	StartResetMatchVote(client);
 	return Plugin_Handled;
