@@ -166,11 +166,6 @@ bool:StartMatchVote(client, const String:cfgname[])
 		PrintToChat(client, "Match voting isn't allowed for spectators.");
 		return false;
 	}
-	if (LGO_IsMatchModeLoaded())
-	{
-		PrintToChat(client, "Match vote cannot be started. Match is already running.");
-		return false;
-	}
 	if (IsNewBuiltinVoteAllowed())
 	{
 		new iNumPlayers;
@@ -191,7 +186,14 @@ bool:StartMatchVote(client, const String:cfgname[])
 		}
 		new String:sBuffer[64];
 		g_hMatchVote = CreateBuiltinVote(VoteActionHandler, BuiltinVoteType_Custom_YesNo, BuiltinVoteAction_Cancel | BuiltinVoteAction_VoteEnd | BuiltinVoteAction_End);
-		Format(sBuffer, sizeof(sBuffer), "Load confogl '%s' config?", cfgname);
+		if (LGO_IsMatchModeLoaded())
+		{
+			Format(sBuffer, sizeof(sBuffer), "Change config to '%s'?", cfgname);
+		}
+		else
+		{
+			Format(sBuffer, sizeof(sBuffer), "Load confogl '%s' config?", cfgname);
+		}
 		SetBuiltinVoteArgument(g_hMatchVote, sBuffer);
 		SetBuiltinVoteInitiator(g_hMatchVote, client);
 		SetBuiltinVoteResultCallback(g_hMatchVote, VoteResultHandler);
