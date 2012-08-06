@@ -48,11 +48,13 @@ public Action:MatchRequest(client, args)
 	if (args > 0)
 	{
 		//config specified
-		new String:sCfg[64], String:sName[64];
+		decl String:sCfg[64], String:sBuffer[256];
 		GetCmdArg(1, sCfg, sizeof(sCfg));
-		if (FindConfigName(sCfg, sName, sizeof(sName)))
+		BuildPath(Path_SM, sBuffer, sizeof(sBuffer), "../../cfg/lgofnoc/%s", sCfg);
+		if (DirExists(sBuffer))
 		{
-			if (StartMatchVote(client, sName))
+			FindConfigName(sCfg, sBuffer, sizeof(sBuffer));
+			if (StartMatchVote(client, sBuffer))
 			{
 				strcopy(g_sCfg, sizeof(g_sCfg), sCfg);
 				//caller is voting for
@@ -166,7 +168,7 @@ bool:StartMatchVote(client, const String:cfgname[])
 		PrintToChat(client, "Match voting isn't allowed for spectators.");
 		return false;
 	}
-	if (IsNewBuiltinVoteAllowed())
+	if (!IsBuiltinVoteInProgress())//disregard sm_vote_delay
 	{
 		new iNumPlayers;
 		decl iPlayers[MaxClients];
