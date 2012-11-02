@@ -11,6 +11,7 @@ new Handle:g_hMatchVote = INVALID_HANDLE;
 new Handle:g_hResetMatchVote = INVALID_HANDLE;
 new Handle:g_hModesKV = INVALID_HANDLE;
 new Handle:g_hCvarPlayerLimit = INVALID_HANDLE;
+new Handle:g_hCvarResetTime = INVALID_HANDLE;
 new String:g_sCfg[32];
 
 public Plugin:myinfo = 
@@ -40,6 +41,7 @@ public OnPluginStart()
 	RegConsoleCmd("sm_match", MatchRequest);
 	RegConsoleCmd("sm_rmatch", MatchReset);
 	g_hCvarPlayerLimit = CreateConVar("sm_match_player_limit", "2", "Minimum # of players in game to start the vote", FCVAR_PLUGIN);
+	g_hCvarResetTime = CreateConVar("sm_match_reset_time", "60.0", "Automatically reset match mode if the server is empty during this time. Negative values disable this feature.", FCVAR_PLUGIN);
 }
 
 public Action:MatchRequest(client, args)
@@ -295,4 +297,26 @@ StartResetMatchVote(client)
 		return;
 	}
 	PrintToChat(client, "Resetmatch vote cannot be started now.");
+}
+
+public Action:MatchResetTimer(Handle:timer)
+{
+	for (new i=1; i<=MaxClients; i++)
+	{
+		if(IsClientConnected(i) && !IsFakeClient(i))
+		{
+			return Plugin_Handled;
+		}
+	}
+	ServerCommand("sm_resetmatch");
+	return Plugin_Handled;
+}
+
+public OnClientDisconnect(client)
+{
+	if(IsFakeClient(client) || !LGO_IsMatchModeLoaded())
+		return;
+	new Float:fResetTime = GetConVarFloat(g_hCvarResetTime);
+	if (fResetTime >= 0.0)
+		CreateTimer(fResetTime, MatchResetTimer);
 }
