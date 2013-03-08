@@ -2,11 +2,12 @@
 #include <left4downtown>
 
 //requires at least left4downtown2 v0.5.4
-//throws:
-//48 - (not used unless tank_overhead_percent is changed) undercut
+//throw sequences:
+//48 - (not used unless tank_rock_overhead_percent is changed)
 
-//49 - 1handed overhand, 50 - throw from the hip, 51 - 2handed overhand
-//		MOUSE2+R				MOUSE2+E					MOUSE2
+//49 - 1handed overhand (MOUSE2+R),
+//50 - underhand (MOUSE2+E),
+//51 - 2handed overhand (MOUSE2)
 
 new g_iQueuedThrow[MAXPLAYERS + 1];
 new Handle:g_hBlockPunchRock = INVALID_HANDLE;
@@ -16,7 +17,7 @@ public Plugin:myinfo =
 	name = "Tank Attack Control",
 	author = "vintik",
 	description = "",
-	version = "0.2",
+	version = "0.3",
 	url = "https://github.com/thevintik/sm_plugins"
 }
 
@@ -70,7 +71,7 @@ public Action:L4D_OnCThrowActivate(ability)
 
 public Action:L4D2_OnSelectTankAttack(client, &sequence)
 {
-	if (sequence > 48)
+	if (sequence > 48 && g_iQueuedThrow[client])
 	{
 		//rock throw
 		sequence = g_iQueuedThrow[client] + 48;
